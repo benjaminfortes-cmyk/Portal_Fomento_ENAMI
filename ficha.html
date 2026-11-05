@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ficha de solicitud | Fomento ENAMI El Salado</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Catamaran:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="estilos.css">
+</head>
+<body>
+<main class="contenedor angosto ficha" id="ficha" aria-live="polite"></main>
+<script src="comun.js"></script>
+<script>
+pintarMarco('solicitudes');
+const clave = TRAMITES[param('t')] ? param('t') : 'anticipo';
+const T = TRAMITES[clave];
+document.title = `Ficha: ${T.corto} | Fomento ENAMI El Salado`;
+
+// Estado de la ficha
+const d = { persona: '', cu: false, rut: '', nombre: '', rep: '', correo: '', fono: '', faena: '', adjuntos: {}, firmado: false };
+let paso = 0, desdeRevisar = false;
+const TOTAL = 7;
+const docs = () => [...DOCS_PERSONA[d.persona || 'natural'], ...T.docs];
+const jur = () => d.persona === 'juridica';
+
+/* ---------- Pantallas: cada una hace una sola pregunta ---------- */
+const P = [
+  { // 0
+    titulo: '¿A nombre de quién es la solicitud?',
+    html: () => `<p class="ayuda">Elige una opción.</p><div class="ops">
+      ${op('persona', 'natural', 'A mi nombre', 'Persona natural')}
+      ${op('persona', 'juridica', 'De mi empresa', 'Necesitarás el RUT de la empresa')}</div>`,
+    validar: () => (d.persona = val('persona')) ? null : [['persona-natural', 'Elige a nombre de quién es la solicitud']],
+  },
+  { // 1
+    titulo: '¿Cómo quieres identificarte?',
+    html: () => d.cu ? `<div class="verificado">${jur() ? 'Representante legal verificado' : 'Identidad verificada'} con ClaveÚnica</div>`
+      : `<p class="ayuda">Con ClaveÚnica tus datos se llenan solos y después firmas con un clic.</p>
+      <div class="acciones" style="flex-direction:column;align-items:stretch">
+        <button type="button" class="btn btn-cu" id="cu"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="14" r="6.5" fill="none" stroke="currentColor" stroke-width="2.4"/><circle cx="12" cy="14" r="2" fill="currentColor"/><path d="M12 7.5V2.5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg><span>Iniciar sesión con ClaveÚnica</span></button>
+        <button type="button" class="btn btn-borde" id="sin-cu">Continuar con mi RUT</button>
+      </div>`,
+    sinContinuar: () => !d.cu,
+    alMostrar: () => {
+      $('#cu')?.addEventListener('click', (e) => {
+        const b = e.currentTarget; b.disabled = true; b.querySelector('span').textContent = 'Conectando con ClaveÚnica…';
+        setTimeout(() => {
+          d.cu = true;
+          if (jur()) d.rep = DEMO_CU.nombre; else { d.rut = DEMO_CU.rut; d.nombre = DEMO_CU.nombre; }
+          ir(2);
+        }, 1300);
+      });
+      $('#sin-cu')?.addEventListener('click', () => ir(2));
+    },
+  },
+  { // 2
+    titulo: () => jur() ? 'Datos de tu empresa' : 'Tus datos',
+    html: () => jur()
+      ? campo('rut', 'RUT de la empresa', 'Por ejemplo, 76.086.428-5', d.rut, 'data-rut') + campo('nombre', 'Razón social', '', d.nombre)
+        + campo('rep', 'Representante legal', d.cu ? 'Verificado con ClaveÚnica' : '', d.rep, d.cu ? 'readonly' : '')
+      : campo('rut', 'RUT', d.cu ? 'Verificado con ClaveÚnica' : 'Por ejemplo, 12.345.678-5', d.rut, d.cu ? 'readonly' : 'data-rut')
+        + campo('nombre', 'Nombre completo', d.cu ? 'Verificado con ClaveÚnica' : '', d.nombre, d.cu ? 'readonly' : 'autocomplete="name"'),
+    validar: () => {
+      d.rut = $('#rut').value.trim(); d.nombre = $('#nombre').value.trim(); if ($('#rep')) d.rep = $('#rep').value.trim();
+      const e = [];
+      if (!rutValido(d.rut)) e.push(['rut', 'Escribe un RUT válido, por ejemplo 12.345.678-5']);
+      if (!d.nombre) e.push(['nombre', jur() ? 'Escribe la razón social' : 'Escribe tu nombre completo']);
+      if (jur() && !d.rep) e.push(['rep', 'Escribe el nombre del representante legal']);
+      return e.length ? e : null;
+    },
+  },
+  { // 3
+    titulo: '¿Cómo te contactamos?',
+    html: () => campo('correo', 'Correo', 'Ahí te llega tu folio y cada aviso', d.correo, 'type="email" autocomplete="email"')
+      + campo('fono', 'Teléfono', 'Por si necesitamos llamarte', d.fono, 'type="tel" autocomplete="tel" placeholder="+56 9"'),
+    validar: () => {
+      d.correo = $('#correo').value.trim(); d.fono = $('#fono').value.trim();
+      const e = [];
+      if (!/^\S+@\S+\.\S+$/.test(d.correo)) e.push(['correo', 'Escribe un correo válido, por ejemplo nombre@correo.cl']);
+      if (limpiarRut(d.fono).length < 8) e.push(['fono', 'Escribe un teléfono de al menos 8 números']);
+      return e.length ? e : null;
+    },
+  },
+  { // 4
+    titulo: () => clave === 'certificado' ? '¿Qué periodo quieres certificar?' : '¿Cuál es tu faena o pertenencia?',
+    html: () => clave === 'certificado'
+      ? campo('faena', 'Periodo', 'Por ejemplo, enero a junio de 2027', d.faena)
+      : campo('faena', 'Nombre de la faena o pertenencia', 'Como aparece en tus papeles', d.faena),
+    validar: () => (d.faena = $('#faena').value.trim()) ? null : [['faena', clave === 'certificado' ? 'Escribe el periodo' : 'Escribe el nombre de la faena o pertenencia']],
+  },
+  { // 5
+    titulo: 'Adjunta tus documentos',
+    html: () => `<p class="ayuda">Una foto clara con el celular sirve. Si te falta alguno, puedes continuar y enviarlo después con tu RUT y folio.</p>
+      <ul class="docs">${docs().map(([n, s], i) => `<li><span class="nom">${n}<small>${s}</small></span>
+      ${d.adjuntos[i] ? '<span class="ok">Adjunto</span>' : `<label class="btn btn-borde">Adjuntar<input type="file" accept="image/*,.pdf" data-i="${i}" hidden></label>`}</li>`).join('')}</ul>`,
+    alMostrar: () => $$('input[type=file]').forEach((inp) => inp.addEventListener('change', () => {
+      if (inp.files.length) { d.adjuntos[inp.dataset.i] = true; inp.closest('li').lastElementChild.outerHTML = '<span class="ok">Adjunto</span>'; }
+    })),
+  },
+  { // 6
+    titulo: 'Revisa y firma tu solicitud',
+    html: () => {
+      const n = docs().length, a = Object.keys(d.adjuntos).length;
+      const filas = [
+        ['Trámite', T.corto, null],
+        ['A nombre de', jur() ? 'Empresa' : 'Persona natural', 0],
+        [jur() ? 'RUT empresa' : 'RUT', d.rut, 2], [jur() ? 'Razón social' : 'Nombre', d.nombre, 2],
+        ...(jur() ? [['Representante', d.rep, 2]] : []),
+        ['Correo', d.correo, 3], ['Teléfono', d.fono, 3],
+        [clave === 'certificado' ? 'Periodo' : 'Faena', d.faena, 4],
+        ['Documentos', `${a} de ${n} adjuntos${a < n ? '. Los demás puedes enviarlos después' : ''}`, 5],
+      ];
+      return `<dl class="revisar">${filas.map(([k, v, p]) => `<div><dt>${k}</dt><dd>${v}</dd>${p === null ? '<span></span>' : `<button type="button" data-cambiar="${p}">Cambiar<span hidden> ${k}</span></button>`}</div>`).join('')}</dl>
+      <section class="firma"><h2>Firma</h2>
+        <label class="acepto"><input type="checkbox" id="acepto" ${d.firmado ? 'checked disabled' : ''}> Declaro que los datos y documentos son verdaderos.</label>
+        <div id="firma-accion" ${d.firmado ? 'hidden' : ''}><button type="button" class="btn btn-tea btn-ancho" id="firmar">${d.cu ? 'Firmar con ClaveÚnica' : 'Firmar solicitud'}</button></div>
+        <div id="firma-codigo" hidden>
+          <div class="campo"><label for="codigo">Código de 6 dígitos</label><span class="pista">Te lo enviamos a ${d.correo}</span>
+          <div class="codigo-fila"><input id="codigo" inputmode="numeric" autocomplete="one-time-code" maxlength="6"><button type="button" class="btn btn-tea" id="firmar-codigo">Firmar</button></div></div>
+          <p class="demo">Para la demostración: código 482913.</p>
+        </div>
+        <div class="sello" id="sello" ${d.firmado ? '' : 'hidden'}>${d.firmado || ''}</div>
+      </section>`;
+    },
+    boton: 'Enviar solicitud firmada',
+    validar: () => d.firmado ? null : [[$('#acepto').checked ? 'firmar' : 'acepto', $('#acepto').checked ? 'Firma tu solicitud para poder enviarla' : 'Marca la declaración y firma tu solicitud']],
+    alMostrar: () => {
+      $$('[data-cambiar]').forEach((b) => b.addEventListener('click', () => { desdeRevisar = true; ir(+b.dataset.cambiar); }));
+      $('#firmar')?.addEventListener('click', () => {
+        if (!$('#acepto').checked) { errores([['acepto', 'Marca la declaración antes de firmar']]); return; }
+        if (d.cu) { const b = $('#firmar'); b.disabled = true; b.textContent = 'Firmando con ClaveÚnica…'; setTimeout(sellar, 1000); }
+        else { $('#firma-accion').hidden = true; $('#firma-codigo').hidden = false; $('#codigo').focus(); }
+      });
+      $('#codigo')?.addEventListener('input', (e) => (e.target.value = e.target.value.replace(/\D/g, '')));
+      $('#firmar-codigo')?.addEventListener('click', () => $('#codigo').value === '482913' ? sellar() : errores([['codigo', 'El código no coincide. Revisa el correo que te enviamos']]));
+    },
+  },
+];
+
+function sellar() {
+  const ahora = new Date();
+  const fecha = ahora.toLocaleDateString('es-CL', { day: 'numeric', month: 'long', year: 'numeric' });
+  const hora = ahora.toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit', hour12: false });
+  const cod = Math.random().toString(16).slice(2, 10).toUpperCase().replace(/(.{4})/, '$1-');
+  const firmante = jur() ? `${d.rep}, en representación de ${d.nombre}` : d.nombre;
+  d.firmado = `<b>Firmado electrónicamente</b>${firmante}, ${jur() ? 'RUT empresa' : 'RUT'} ${d.rut}<br>${fecha}, ${hora} h. ${d.cu ? 'Identidad verificada con ClaveÚnica.' : 'Verificado con código al correo.'}<br><span>Firma electrónica simple, Ley 19.799. Código de verificación ${cod}</span>`;
+  $('#acepto').disabled = true; $('#firma-accion').hidden = true; $('#firma-codigo').hidden = true;
+  $('#sello').innerHTML = d.firmado; $('#sello').hidden = false;
+  $('.resumen-error')?.remove(); $$('.error-campo').forEach((x) => x.remove());
+  $('#continuar').focus();
+}
+
+/* ---------- Ayudantes ---------- */
+const val = (n) => ($(`[name=${n}]:checked`) || {}).value || '';
+const op = (n, v, t, s) => `<label class="op" for="${n}-${v}"><input type="radio" name="${n}" id="${n}-${v}" value="${v}" ${d[n] === v ? 'checked' : ''}><i></i><span>${t}<small>${s}</small></span></label>`;
+const campo = (id, lbl, pista, v, extra = '') => `<div class="campo" id="c-${id}"><label for="${id}">${lbl}</label>${pista ? `<span class="pista">${pista}</span>` : ''}<input id="${id}" value="${(v || '').replace(/"/g, '&quot;')}" ${extra}></div>`;
+const txt = (x) => typeof x === 'function' ? x() : x;
+
+function errores(lista) {
+  $('.resumen-error')?.remove(); $$('.error-campo').forEach((x) => x.remove()); $$('input.mal').forEach((x) => x.classList.remove('mal'));
+  const caja = document.createElement('div');
+  caja.className = 'resumen-error'; caja.setAttribute('role', 'alert'); caja.tabIndex = -1;
+  caja.innerHTML = `<h2>Hay ${lista.length === 1 ? 'un problema' : 'problemas'}</h2><ul>${lista.map(([id, m]) => `<li><a href="#${id}">${m}</a></li>`).join('')}</ul>`;
+  $('.pregunta h1').after(caja);
+  lista.forEach(([id, m]) => {
+    const el = document.getElementById(id); if (!el) return;
+    if (el.tagName === 'INPUT' && el.type !== 'radio' && el.type !== 'checkbox') el.classList.add('mal');
+    const s = document.createElement('span'); s.className = 'error-campo'; s.textContent = m;
+    (el.closest('.campo') || el.closest('.ops') || el.closest('label') || el).insertAdjacentElement(el.closest('.campo') ? 'beforeend' : 'afterend', s);
+  });
+  $$('a', caja).forEach((a) => a.addEventListener('click', (e) => { e.preventDefault(); document.getElementById(a.getAttribute('href').slice(1))?.focus(); }));
+  caja.focus();
+}
+
+function ir(n) {
+  paso = n;
+  const p = P[n];
+  $('#ficha').innerHTML = `
+    <button type="button" class="volver" id="atras">${ATRAS}${n === 0 ? `Volver a ${T.corto}` : desdeRevisar ? 'Volver a revisar' : 'Atrás'}</button>
+    <div class="ficha-tram"><img src="img/t-${clave}.jpg" alt=""><span><small>Solicitud de</small><b>${T.nombre}</b></span></div>
+    <p class="progreso">Paso ${n + 1} de ${TOTAL}</p>
+    <div class="barra-av" aria-hidden="true"><i style="width:${(n + 1) / TOTAL * 100}%"></i></div>
+    <form class="pregunta" id="form" novalidate>
+      <h1 tabindex="-1">${txt(p.titulo)}</h1>
+      ${p.html()}
+      ${p.sinContinuar?.() ? '' : `<div class="acciones"><button class="btn ${n === TOTAL - 1 ? 'btn-nar' : 'btn-tea'}" id="continuar">${p.boton || (desdeRevisar ? 'Guardar y volver a revisar' : 'Continuar')}</button></div>`}
+    </form>`;
+  activarRut();
+  $('#atras').addEventListener('click', () => {
+    if (n === 0) location.href = `tramite.html?t=${clave}`;
+    else if (desdeRevisar) { desdeRevisar = false; ir(6); }
+    else ir(n === 2 && d.cu ? 0 : n - 1);
+  });
+  $('#form').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const err = p.validar?.();
+    if (err) { errores(err); return; }
+    if (n === 0 && d.cu && ((d.rep && !jur()) || (!d.rep && jur()))) { d.cu = false; d.rut = d.nombre = d.rep = ''; } // cambió el tipo de persona
+    if (n === TOTAL - 1) return enviar();
+    if (desdeRevisar) { desdeRevisar = false; return ir(6); }
+    ir(n === 0 && d.cu ? 2 : n + 1);
+  });
+  p.alMostrar?.();
+  window.scrollTo(0, 0);
+  $('.pregunta h1').focus({ preventScroll: true });
+}
+
+function enviar() {
+  const faltan = docs().length - Object.keys(d.adjuntos).length;
+  $('#ficha').innerHTML = `<div class="envio"><svg class="candado-anim" viewBox="0 0 64 64" aria-hidden="true"><path class="arco" d="M20 28v-8a12 12 0 0 1 24 0v8" fill="none" stroke="currentColor" stroke-width="6"/><rect x="12" y="28" width="40" height="30" rx="5" fill="currentColor"/></svg><p id="env-txt">Cifrando tu solicitud en este dispositivo…</p></div>`;
+  setTimeout(() => ($('#env-txt').textContent = 'Enviando de forma segura…'), 1200);
+  setTimeout(() => {
+    const url = `estado.html?folio=FOM-2027-0143&rut=${encodeURIComponent(d.rut)}&t=${clave}&faltan=${faltan}`;
+    $('#ficha').innerHTML = `
+      <div class="confirmacion" role="status"><h1>Solicitud enviada</h1><p>Tu folio es</p><p class="folio">FOM-2027-0143</p></div>
+      <div class="sigue">
+        <p>Te enviamos el folio y una copia firmada a <b>${d.correo}</b>.</p>
+        <h2>Qué pasa ahora</h2>
+        <p>${faltan ? `Te ${faltan === 1 ? 'falta 1 documento' : `faltan ${faltan} documentos`}. Cuando lo envíes, tu solicitud pasa a evaluación técnica.` : 'Tu solicitud pasa a evaluación técnica.'} Después siguen la evaluación comercial y la aprobación de la jefatura. Te avisamos por correo en cada cambio.</p>
+        <div class="acciones"><a class="btn btn-tea" href="${url}">Ver mi solicitud</a><a href="index.html">Volver al inicio</a></div>
+      </div>`;
+    $('.confirmacion h1').setAttribute('tabindex', '-1'); $('.confirmacion h1').focus();
+  }, 2300);
+}
+
+const demo = param('demo');
+if (demo !== null) {
+  const n = +demo;
+  Object.assign(d, { persona: 'natural', cu: n >= 2, rut: n >= 2 ? DEMO_CU.rut : '', nombre: n >= 2 ? DEMO_CU.nombre : '',
+    correo: n >= 3 ? 'maria.rojas@correo.cl' : '', fono: n >= 3 ? '+56 9 8765 4321' : '', faena: n >= 4 ? 'Mina Santa Rosa, Diego de Almagro' : '' });
+  if (n === 0) d.persona = '';
+  if (n >= 5) docs().forEach((x, i) => { if (i < docs().length - 1) d.adjuntos[i] = true; });
+  if (n <= 6) ir(n);
+  else if (n === 7) { ir(6); $('#acepto').checked = true; sellar(); setTimeout(() => window.scrollTo({ top: $('.firma').getBoundingClientRect().top + window.scrollY - 90, behavior: 'instant' }), 700); }
+  else { ir(6); enviar(); }
+} else ir(0);
+</script>
+</body>
+</html>

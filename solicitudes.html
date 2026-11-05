@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Solicitudes | Fomento ENAMI El Salado</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Catamaran:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="estilos.css">
+</head>
+<body>
+<main class="contenedor">
+  <p class="migas"><a href="index.html">Inicio</a><span>&rsaquo;</span>Solicitudes</p>
+  <div class="titulo">
+    <h1>¿Qué trámite necesitas realizar?</h1>
+    <p class="lead">Selecciona el trámite que quieres solicitar.</p>
+  </div>
+  <ul class="tram-lista" id="tram-lista"></ul>
+  <p class="nota-oficina"><strong>¿No sabes cuál es?</strong> Pregunta en la oficina de Fomento de El Salado y te orientan. También pueden ingresar la solicitud por ti.</p>
+</main>
+<script src="comun.js"></script>
+<script>
+pintarMarco('solicitudes');
+const FOTOS = { anticipo: 'b-anticipo.jpg', arriendo: 'b-arriendo.jpg', certificado: 'b-certificado.jpg', empadronamiento: 'b-empadronamiento.jpg' };
+$('#tram-lista').innerHTML = Object.entries(TRAMITES).map(([k, t]) => `
+  <li><a class="tram" href="ingreso.html?t=${k}">
+    <img src="img/${FOTOS[k]}" alt="">
+    <span class="tram-tx"><b>${t.corto}</b><small>${t.resumen}</small></span>
+    <span class="tram-ir">${t.accion} ${FLECHA}</span>
+  </a></li>`).join('');
+</script>
+</body>
+</html>

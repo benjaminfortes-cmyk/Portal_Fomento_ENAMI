@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ver mi solicitud | Fomento ENAMI El Salado</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Catamaran:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="estilos.css">
+</head>
+<body>
+<main class="contenedor angosto">
+  <p class="migas"><a href="index.html">Inicio</a><span>&rsaquo;</span>Ver mi solicitud</p>
+  <div class="titulo">
+    <h1>Ver mi solicitud</h1>
+    <p class="lead">Escribe tu RUT y el folio que te llegó al correo cuando enviaste la solicitud.</p>
+  </div>
+  <form class="consulta" id="consulta" novalidate>
+    <div class="campo" id="c-rut"><label for="rut">RUT</label><span class="pista">El de la persona o empresa que pidió el trámite</span><input id="rut" data-rut autocomplete="off"></div>
+    <div class="campo" id="c-folio"><label for="folio">Folio</label><span class="pista">Por ejemplo, FOM-2027-0142</span><input id="folio" autocomplete="off"></div>
+    <div class="acciones"><button class="btn btn-tea">Ver estado</button></div>
+    <p class="demo">Para la demostración: RUT 12.345.678-5 y folio FOM-2027-0142 o FOM-2027-0137.</p>
+  </form>
+  <section id="resultado" hidden>
+    <div class="estado-cab"><h2 id="r-folio"></h2><p id="r-sub"></p></div>
+    <div class="aviso" id="aviso" hidden></div>
+    <ol class="linea" id="linea"></ol>
+  </section>
+</main>
+<script src="comun.js"></script>
+<script>
+pintarMarco('estado');
+activarRut();
+$('#folio').addEventListener('input', (e) => (e.target.value = e.target.value.toUpperCase()));
+const ETAPAS = ['Solicitud recibida', 'Documentación completa', 'Evaluación técnica', 'Evaluación comercial', 'Aprobación de jefatura', 'Resolución'];
+const CASOS = {
+  'FOM-2027-0142': { tramite: 'Anticipo', fecha: 'el 4 de marzo', en: 2, fechas: ['4 mar', '4 mar'] },
+  'FOM-2027-0137': { tramite: 'Arriendo', fecha: 'el 27 de febrero', en: 1, fechas: ['27 feb'], falta: 'plan de trabajo' },
+};
+// Solicitud recién enviada desde la ficha
+if (param('folio') === 'FOM-2027-0143') {
+  const f = +param('faltan') || 0;
+  CASOS['FOM-2027-0143'] = { tramite: (TRAMITES[param('t')] || TRAMITES.anticipo).corto, fecha: 'hoy', en: f ? 1 : 2, fechas: ['hoy', 'hoy'], falta: f ? `${f} documento${f > 1 ? 's' : ''} de tu ficha` : null };
+}
+
+function quitarErrores() { $('.resumen-error')?.remove(); $$('.error-campo').forEach((x) => x.remove()); $$('input.mal').forEach((x) => x.classList.remove('mal')); }
+function error(id, msg) {
+  quitarErrores();
+  const caja = document.createElement('div'); caja.className = 'resumen-error'; caja.setAttribute('role', 'alert'); caja.tabIndex = -1;
+  caja.innerHTML = `<h2>Hay un problema</h2><ul><li><a href="#${id}">${msg}</a></li></ul>`;
+  $('#consulta').prepend(caja);
+  $(`#${id}`).classList.add('mal');
+  $(`#c-${id}`).insertAdjacentHTML('beforeend', `<span class="error-campo">${msg}</span>`);
+  $('a', caja).addEventListener('click', (e) => { e.preventDefault(); $(`#${id}`).focus(); });
+  caja.focus();
+}
+
+function pintarLinea(en, fechas, falta) {
+  $('#linea').innerHTML = ETAPAS.map((t, i) => {
+    const cls = i < en ? 'hecho' : i === en ? 'ahora' : '';
+    let tx = i < en ? (fechas[i] ? `Listo, ${fechas[i]}` : 'Listo') : i === en ? (falta && i === 1 ? 'Esperando tu documento' : 'En curso') : '';
+    if (i === en && i === 2) tx = 'En curso: la está revisando el equipo técnico';
+    return `<li class="${cls}"><span class="pt"></span><h3>${t}</h3>${tx ? `<p>${tx}</p>` : ''}</li>`;
+  }).join('');
+}
+
+function mostrar(folio) {
+  const c = CASOS[folio];
+  $('#consulta').hidden = true; $('.titulo .lead').textContent = 'Así va tu solicitud. Te avisamos por correo cada vez que cambia de etapa.';
+  $('#resultado').hidden = false;
+  $('#r-folio').textContent = folio;
+  $('#r-sub').textContent = `${c.tramite}, ingresada ${c.fecha}`;
+  const av = $('#aviso');
+  if (c.falta) {
+    av.hidden = false; av.classList.remove('resuelto');
+    av.innerHTML = `<p><b>Falta:</b> ${c.falta}. Súbelo aquí y tu solicitud sigue avanzando.</p><label class="btn btn-nar">Subir documento<input type="file" hidden></label>`;
+    $('input', av).addEventListener('change', (e) => {
+      if (!e.target.files.length) return;
+      av.classList.add('resuelto'); av.innerHTML = '<p><b>Documento recibido.</b> Tu solicitud pasa a evaluación técnica.</p>';
+      pintarLinea(2, [...c.fechas.slice(0, 1), 'hoy']);
+    });
+  } else av.hidden = true;
+  pintarLinea(c.falta ? 1 : c.en, c.fechas, c.falta);
+  $('.titulo h1').setAttribute('tabindex', '-1'); $('.titulo h1').focus();
+}
+
+$('#consulta').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const rut = $('#rut').value, f = $('#folio').value.trim();
+  if (!rutValido(rut)) return error('rut', 'Escribe un RUT válido. Revisa el dígito verificador');
+  if (!/^FOM-\d{4}-\d{4}$/.test(f)) return error('folio', 'El folio tiene la forma FOM-2027-0142');
+  if (!CASOS[f]) return error('folio', 'No encontramos ese folio para este RUT. Revisa el correo con que enviaste tu solicitud');
+  quitarErrores();
+  mostrar(f);
+});
+
+if (param('folio') && CASOS[param('folio')]) mostrar(param('folio'));
+</script>
+</body>
+</html>

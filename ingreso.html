@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ingresa | Fomento ENAMI El Salado</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Catamaran:wght@400;500;600;700;800&family=Roboto:wght@700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="estilos.css">
+<style>
+.ingreso{background:#fff;padding:20px 0 40px}
+.ing{max-width:520px;margin:0 auto;display:flex;flex-direction:column;min-height:calc(100vh - 260px)}
+.volver-ing{align-self:flex-start;display:inline-flex;align-items:center;gap:4px;font-size:17px;font-weight:700;color:var(--teal-p);text-decoration:none}
+.volver-ing svg{width:17px;height:17px}
+.ctx{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:20px;padding:12px 16px;border-radius:12px;background:var(--roca)}
+.ctx span{font-size:15px;color:var(--gris);line-height:1.2}
+.ctx b{display:block;font-size:19px;color:var(--tinta)}
+.ctx a{font-size:15px;font-weight:800;color:var(--teal-p)}
+.ing h1{font-size:clamp(28px,4vw,34px);font-weight:800;line-height:1.1;margin-top:26px}
+.btn-cu-of{display:flex;align-items:center;justify-content:center;gap:12px;background:#0F69C4;color:#fff;border:0;border-radius:6px;font:700 19px Roboto,"Segoe UI",Arial,sans-serif;min-height:60px;width:100%;margin-top:22px;cursor:pointer;white-space:nowrap}
+.btn-cu-of:hover{background:#0B4E92}
+.btn-cu-of:focus-visible{outline:3px solid var(--naranjo);outline-offset:3px}
+.btn-cu-of svg{width:28px;height:28px;flex:none}
+.seg{display:flex;align-items:center;justify-content:center;gap:6px;font-size:14px;color:var(--gris);margin-top:8px}
+.seg svg{width:15px;height:15px;color:var(--teal-o)}
+.o-sep{display:flex;align-items:center;gap:12px;color:var(--gris);font-size:15px;margin:22px 0}
+.o-sep::before,.o-sep::after{content:"";flex:1;height:1px;background:var(--linea)}
+.btn-rut svg{width:24px;height:24px}
+.rut-form .btn:disabled{background:#B7C6C4;border-color:#B7C6C4;color:#fff;cursor:not-allowed;opacity:1}
+.ayuda-ing{margin-top:auto;padding-top:26px}
+.ayuda-ing p{display:flex;align-items:center;gap:12px;border-top:1px solid var(--linea);padding-top:16px;font-size:15px;color:var(--gris)}
+.ayuda-ing svg{width:24px;height:24px;flex:none;color:var(--teal-p)}
+.ayuda-ing b{color:var(--tinta)}
+/* pantallas de paso */
+.paso-ing{max-width:620px;margin:22px auto 0;background:#fff;border-radius:16px;box-shadow:0 6px 20px rgba(0,40,40,.1);padding:34px 26px;text-align:center}
+.paso-ing h2{font-size:26px;font-weight:800;margin-top:14px}
+.paso-ing p{font-size:18px;color:var(--gris);margin-top:8px}
+.giro{width:56px;height:56px;border-radius:50%;border:5px solid #D7E6F5;border-top-color:#0F69C4;margin:0 auto;animation:gira 1s linear infinite}
+@keyframes gira{to{transform:rotate(360deg)}}
+.dominio{display:inline-block;margin-top:14px;font-size:15px;background:var(--roca);border-radius:8px;padding:6px 12px;color:var(--tinta)}
+.ok-g{width:64px;height:64px;border-radius:50%;margin:0 auto;background:var(--teal-p) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M5 10.5l3 3 7-7' fill='none' stroke='white' stroke-width='2.4'/%3E%3C/svg%3E") center/36px no-repeat}
+.datos-ok{margin:18px auto 0;text-align:left;max-width:380px;border:2px solid var(--linea);border-radius:12px;padding:12px 16px;font-size:17px}
+.datos-ok dt{color:var(--gris);font-size:14px}
+.datos-ok dd{margin:0 0 6px;font-weight:700}
+.fin{margin-top:18px;font-size:15px;color:var(--gris);border-top:1px dashed var(--linea);padding-top:14px}
+.rut-form{text-align:left}
+#rut.valido{border-color:var(--teal-p);padding-right:48px;background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='12' fill='%2300877D'/%3E%3Cpath d='M7 12.5l3.2 3.2L17 9' fill='none' stroke='white' stroke-width='2.6'/%3E%3C/svg%3E") right 14px center/26px no-repeat}
+.paso-ing{background:var(--roca)}
+@media (max-width:640px){.paso-ing{padding:28px 16px}.btn-cu-of{font-size:17px}.ing{min-height:calc(100vh - 200px)}}
+</style>
+</head>
+<body>
+<main class="ingreso">
+  <div class="contenedor">
+    <!-- 1. Elegir cómo ingresar -->
+    <section class="ing" id="v-elegir">
+      <a class="volver-ing" href="solicitudes.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>Volver</a>
+      <div class="ctx"><span>Vas a solicitar<b id="ctx-tram"></b></span><a href="solicitudes.html">Cambiar</a></div>
+      <h1>Ingresa para continuar</h1>
+      <button type="button" class="btn-cu-of" id="b-cu"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="14" r="6.5" fill="none" stroke="currentColor" stroke-width="2.4"/><circle cx="12" cy="14" r="2" fill="currentColor"/><path d="M12 7.5V2.5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>Iniciar sesión con ClaveÚnica</button>
+      <p class="seg"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2" fill="currentColor"/><path d="M8 11V8a4 4 0 0 1 8 0v3" fill="none" stroke="currentColor" stroke-width="2.4"/></svg>Sitio oficial del Estado.</p>
+      <p class="o-sep">o</p>
+      <button type="button" class="btn btn-borde btn-ancho btn-rut" id="b-rut"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2.5" y="5" width="19" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="8.5" cy="11" r="2.3" fill="none" stroke="currentColor" stroke-width="2"/><path d="M5.5 16c.6-1.6 1.7-2.4 3-2.4s2.4.8 3 2.4M14 10h5M14 13.5h4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Ingresar con mi RUT</button>
+      <form class="rut-form" id="f-rut" hidden novalidate>
+        <div class="campo" id="c-rut"><label for="rut">Tu RUT</label><span class="pista">Te enviamos un código a tu correo</span><input id="rut" data-rut autocomplete="off" inputmode="text" placeholder="12.345.678-5"></div>
+        <button class="btn btn-tea btn-ancho" id="b-cont" style="margin-top:14px" disabled>Continuar</button>
+      </form>
+      <div class="ayuda-ing"><p><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3l3.5 4-2 2.5a12 12 0 0 0 7 7l2.5-2 4 3.5-1.5 3c-8 1-17-8-16-16z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg><span><b>¿Necesitas ayuda?</b> La oficina de El Salado puede ingresar la solicitud por ti.</span></p></div>
+    </section>
+
+    <!-- 2. Redirección a ClaveÚnica -->
+    <section class="paso-ing" id="v-redir" hidden>
+      <div class="giro" aria-hidden="true"></div>
+      <h2>Te estamos llevando a ClaveÚnica</h2>
+      <p>Vas a ingresar tu RUN y tu clave en el sitio oficial del Estado.</p>
+      <span class="dominio">🔒 claveunica.gob.cl</span>
+    </section>
+
+    <!-- 3. Vuelta con identidad verificada -->
+    <section class="paso-ing" id="v-ok" hidden>
+      <div class="ok-g" aria-hidden="true"></div>
+      <h2 id="ok-tit">Identidad verificada</h2>
+      <p id="ok-sub">Volviste desde ClaveÚnica. Ya puedes comenzar tu solicitud.</p>
+      <dl class="datos-ok"><dt>Nombre</dt><dd id="ok-nom">María Elena Rojas Díaz</dd><dt>RUT</dt><dd id="ok-rut">12.345.678-5</dd><dt>Trámite</dt><dd id="ok-tram"></dd></dl>
+      <p class="fin">Prototipo: aquí comienza la ficha de solicitud.</p>
+    </section>
+  </div>
+</main>
+<script src="comun.js"></script>
+<script>
+pintarMarco('solicitudes');
+activarRut();
+const clave = TRAMITES[param('t')] ? param('t') : 'anticipo';
+const T = TRAMITES[clave];
+document.title = `Ingresa: ${T.corto} | Fomento ENAMI El Salado`;
+$('#ctx-tram').textContent = T.nombre;
+$('#ok-tram').textContent = T.nombre;
+const ver = (id) => { ['#v-elegir', '#v-redir', '#v-ok'].forEach((v) => ($(v).hidden = v !== id)); window.scrollTo(0, 0); };
+
+// Maqueta beta: al iniciar sesión se vuelve a la página principal
+$('#b-cu').addEventListener('click', () => { location.href = 'index.html'; });
+$('#b-rut').addEventListener('click', () => { $('#b-rut').hidden = true; $('#f-rut').hidden = false; $('#rut').focus(); });
+$('#rut').addEventListener('input', () => { const ok = rutValido($('#rut').value); $('#b-cont').disabled = !ok; $('#rut').classList.toggle('valido', ok); });
+$('#f-rut').addEventListener('submit', (e) => {
+  e.preventDefault();
+  $$('.error-campo').forEach((x) => x.remove()); $('#rut').classList.remove('mal');
+  if (!rutValido($('#rut').value)) {
+    $('#rut').classList.add('mal');
+    $('#c-rut').insertAdjacentHTML('beforeend', '<span class="error-campo">Escribe un RUT válido, por ejemplo 12.345.678-5</span>');
+    return;
+  }
+  location.href = 'index.html'; // maqueta beta: vuelve a la página principal
+});
+// Para capturas: ?vista=redir | ok
+if (param('vista') === 'rut') { $('#b-rut').click(); $('#rut').value = '12.345.678-5'; $('#rut').dispatchEvent(new Event('input')); }
+if (param('vista') === 'redir') ver('#v-redir');
+if (param('vista') === 'ok') ver('#v-ok');
+</script>
+</body>
+</html>

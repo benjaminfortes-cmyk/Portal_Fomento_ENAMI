@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Trámite | Fomento ENAMI El Salado</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Catamaran:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="estilos.css">
+</head>
+<body>
+<main>
+  <div class="contenedor"><p class="migas"><a href="index.html">Inicio</a><span>&rsaquo;</span><a href="solicitudes.html">Solicitudes</a><span>&rsaquo;</span><span id="miga"></span></p></div>
+  <div class="t-cab">
+    <div class="contenedor">
+      <small>Gerencia de Fomento y Minería, oficina El Salado</small>
+      <h1 id="t-nombre"></h1>
+      <div class="t-datos" id="t-datos"></div>
+      <div class="pestanas" role="tablist" id="pestanas"></div>
+    </div>
+  </div>
+  <div class="contenedor t-cuerpo">
+    <div class="panel" id="panel" role="tabpanel" tabindex="-1"></div>
+    <aside class="lado">
+      <h2>Hazlo en línea</h2>
+      <p id="lado-txt"></p>
+      <a class="btn btn-nar btn-ancho" id="ir-ficha" href="#">Comenzar ahora <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+      <p>¿Prefieres hacerlo en persona? Ve a la oficina de Fomento de El Salado y te ayudan.</p>
+    </aside>
+  </div>
+</main>
+<script src="comun.js"></script>
+<script>
+pintarMarco('solicitudes');
+const clave = TRAMITES[param('t')] ? param('t') : 'anticipo';
+const t = TRAMITES[clave];
+document.title = `${t.corto} | Fomento ENAMI El Salado`;
+$('#miga').textContent = t.corto;
+$('#t-nombre').textContent = t.nombre;
+$('#t-datos').innerHTML = `<span>Costo: <b>sin costo</b> ${EJ}</span><span>Respuesta: <b>${t.respuesta}</b> ${EJ}</span><span>Se hace: <b>en línea o en oficina</b></span>`;
+$('#lado-txt').textContent = `Entras con tu ClaveÚnica o con tu RUT. Te toma unos ${t.minutos} minutos y puedes enviar documentos después.`;
+$("#ir-ficha").href = `ingreso.html?t=${clave}`;
+
+const lista = (arr) => `<ul>${arr.map(([n, s]) => `<li><b>${n}</b>. ${s}.</li>`).join('')}</ul>`;
+const PESTANAS = {
+  'Descripción': `<h2>¿De qué se trata?</h2>${t.descripcion}`,
+  '¿Quién puede pedirlo?': `<h2>¿Quién puede pedirlo?</h2><ul>${t.quien.map((q) => `<li>${q}</li>`).join('')}</ul>`,
+  '¿Qué necesito?': `<h2>¿Qué necesito?</h2>
+    <h3>Si es a tu nombre</h3>${lista([...DOCS_PERSONA.natural, ...t.docs])}
+    <h3>Si es de tu empresa</h3>${lista([...DOCS_PERSONA.juridica, ...t.docs])}
+    <p style="margin-top:14px;color:var(--gris)">Una foto clara con el celular sirve. ${EJ}</p>`,
+  '¿Cómo y dónde lo hago?': `<h2>¿Cómo y dónde lo hago?</h2>
+    <div class="via"><b>En línea</b>Entra con tu ClaveÚnica, responde las preguntas, adjunta tus documentos y firma. Recibes un folio al instante.</div>
+    <div class="via"><b>En la oficina de Fomento de El Salado</b>Lleva tus documentos. El equipo ingresa la solicitud por ti en la misma plataforma y recibes el mismo folio.</div>`,
+};
+const nombres = Object.keys(PESTANAS);
+$('#pestanas').innerHTML = nombres.map((n, i) => `<button role="tab" id="tab${i}" aria-selected="${i === 0}" aria-controls="panel">${n}</button>`).join('');
+function mostrar(i, foco) {
+  $$('#pestanas button').forEach((b, j) => { b.setAttribute('aria-selected', i === j); b.tabIndex = i === j ? 0 : -1; });
+  $('#panel').innerHTML = PESTANAS[nombres[i]];
+  $('#panel').setAttribute('aria-labelledby', `tab${i}`);
+  if (foco) $(`#tab${i}`).focus();
+}
+$$('#pestanas button').forEach((b, i) => {
+  b.addEventListener('click', () => mostrar(i));
+  b.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight') mostrar((i + 1) % nombres.length, true);
+    if (e.key === 'ArrowLeft') mostrar((i - 1 + nombres.length) % nombres.length, true);
+  });
+});
+mostrar(0);
+</script>
+</body>
+</html>
