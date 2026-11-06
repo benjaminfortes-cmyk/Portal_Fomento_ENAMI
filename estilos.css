@@ -237,7 +237,7 @@ input.mal{border-color:var(--rojo)}
 .pie{background:var(--teal-o);color:#DDF2EF;padding:32px 0}
 .pie-in{display:flex;gap:28px;align-items:center}
 .pie img{height:24px;width:auto;flex:none}
-.pie p{font-size:15px;max-width:60em}
+.pie p{font-size:15px;max-width:60em;text-align:justify;hyphens:auto;-webkit-hyphens:auto}
 
 /* Celular */
 @media (max-width:900px){
