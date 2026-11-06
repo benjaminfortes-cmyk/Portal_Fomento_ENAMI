@@ -100,7 +100,7 @@ a:hover{color:var(--teal-o)}
 .grupo li a:hover{border-color:var(--teal-p)}
 .grupo li a small{display:block;font-weight:500;font-size:16px;color:var(--gris)}
 .grupo li a svg{flex:none;width:24px;height:24px}
-.nota-oficina{font-size:18px;color:var(--gris);border-left:6px solid var(--naranjo);padding:4px 0 4px 18px;margin-bottom:64px}
+.nota-oficina{font-size:18px;color:var(--gris);border-left:6px solid var(--naranjo);padding:4px 0 4px 18px;margin-bottom:64px;text-align:justify;hyphens:auto;-webkit-hyphens:auto}
 .nota-oficina strong{color:var(--tinta)}
 
 /* ---------- Solicitudes: franjas con foto real y botón ---------- */
