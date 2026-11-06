@@ -32,7 +32,6 @@
 .ayuda-ing p{display:flex;align-items:center;gap:12px;border-top:1px solid var(--linea);padding-top:16px;font-size:15px;color:var(--gris)}
 .ayuda-ing svg{width:24px;height:24px;flex:none;color:var(--teal-p)}
 .ayuda-ing b{color:var(--tinta)}
-/* pantallas de paso */
 .paso-ing{max-width:620px;margin:22px auto 0;background:#fff;border-radius:16px;box-shadow:0 6px 20px rgba(0,40,40,.1);padding:34px 26px;text-align:center}
 .paso-ing h2{font-size:26px;font-weight:800;margin-top:14px}
 .paso-ing p{font-size:18px;color:var(--gris);margin-top:8px}
@@ -53,7 +52,6 @@
 <body>
 <main class="ingreso">
   <div class="contenedor">
-    <!-- 1. Elegir cómo ingresar -->
     <section class="ing" id="v-elegir">
       <a class="volver-ing" href="solicitudes.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>Volver</a>
       <div class="ctx"><span>Vas a solicitar<b id="ctx-tram"></b></span><a href="solicitudes.html">Cambiar</a></div>
@@ -69,7 +67,6 @@
       <div class="ayuda-ing"><p><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3l3.5 4-2 2.5a12 12 0 0 0 7 7l2.5-2 4 3.5-1.5 3c-8 1-17-8-16-16z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg><span><b>¿Necesitas ayuda?</b></span></p></div>
     </section>
 
-    <!-- 2. Redirección a ClaveÚnica -->
     <section class="paso-ing" id="v-redir" hidden>
       <div class="giro" aria-hidden="true"></div>
       <h2>Te estamos llevando a ClaveÚnica</h2>
@@ -77,7 +74,6 @@
       <span class="dominio">🔒 claveunica.gob.cl</span>
     </section>
 
-    <!-- 3. Vuelta con identidad verificada -->
     <section class="paso-ing" id="v-ok" hidden>
       <div class="ok-g" aria-hidden="true"></div>
       <h2 id="ok-tit">Identidad verificada</h2>
@@ -98,7 +94,6 @@ $('#ctx-tram').textContent = T.nombre;
 $('#ok-tram').textContent = T.nombre;
 const ver = (id) => { ['#v-elegir', '#v-redir', '#v-ok'].forEach((v) => ($(v).hidden = v !== id)); window.scrollTo(0, 0); };
 
-// Maqueta beta: al iniciar sesión se vuelve a la página principal
 $('#b-cu').addEventListener('click', () => { location.href = 'index.html'; });
 $('#b-rut').addEventListener('click', () => { $('#b-rut').hidden = true; $('#f-rut').hidden = false; $('#rut').focus(); });
 $('#rut').addEventListener('input', () => { const ok = rutValido($('#rut').value); $('#b-cont').disabled = !ok; $('#rut').classList.toggle('valido', ok); });
@@ -110,9 +105,8 @@ $('#f-rut').addEventListener('submit', (e) => {
     $('#c-rut').insertAdjacentHTML('beforeend', '<span class="error-campo">Escribe un RUT válido, por ejemplo 12.345.678-5</span>');
     return;
   }
-  location.href = 'index.html'; // maqueta beta: vuelve a la página principal
+  location.href = 'index.html';
 });
-// Para capturas: ?vista=redir | ok
 if (param('vista') === 'rut') { $('#b-rut').click(); $('#rut').value = '12.345.678-5'; $('#rut').dispatchEvent(new Event('input')); }
 if (param('vista') === 'redir') ver('#v-redir');
 if (param('vista') === 'ok') ver('#v-ok');

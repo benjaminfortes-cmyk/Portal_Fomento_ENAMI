@@ -38,7 +38,6 @@ const CASOS = {
   'FOM-2027-0142': { tramite: 'Anticipo', fecha: 'el 4 de marzo', en: 2, fechas: ['4 mar', '4 mar'] },
   'FOM-2027-0137': { tramite: 'Arriendo', fecha: 'el 27 de febrero', en: 1, fechas: ['27 feb'], falta: 'plan de trabajo' },
 };
-// Solicitud recién enviada desde la ficha
 if (param('folio') === 'FOM-2027-0143') {
   const f = +param('faltan') || 0;
   CASOS['FOM-2027-0143'] = { tramite: (TRAMITES[param('t')] || TRAMITES.anticipo).corto, fecha: 'hoy', en: f ? 1 : 2, fechas: ['hoy', 'hoy'], falta: f ? `${f} documento${f > 1 ? 's' : ''} de tu ficha` : null };

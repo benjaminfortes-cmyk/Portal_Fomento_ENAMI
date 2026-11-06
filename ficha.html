@@ -18,23 +18,21 @@ const clave = TRAMITES[param('t')] ? param('t') : 'anticipo';
 const T = TRAMITES[clave];
 document.title = `Ficha: ${T.corto} | Fomento ENAMI El Salado`;
 
-// Estado de la ficha
 const d = { persona: '', cu: false, rut: '', nombre: '', rep: '', correo: '', fono: '', faena: '', adjuntos: {}, firmado: false };
 let paso = 0, desdeRevisar = false;
 const TOTAL = 7;
 const docs = () => [...DOCS_PERSONA[d.persona || 'natural'], ...T.docs];
 const jur = () => d.persona === 'juridica';
 
-/* ---------- Pantallas: cada una hace una sola pregunta ---------- */
 const P = [
-  { // 0
+  {
     titulo: '¿A nombre de quién es la solicitud?',
     html: () => `<p class="ayuda">Elige una opción.</p><div class="ops">
       ${op('persona', 'natural', 'A mi nombre', 'Persona natural')}
       ${op('persona', 'juridica', 'De mi empresa', 'Necesitarás el RUT de la empresa')}</div>`,
     validar: () => (d.persona = val('persona')) ? null : [['persona-natural', 'Elige a nombre de quién es la solicitud']],
   },
-  { // 1
+  {
     titulo: '¿Cómo quieres identificarte?',
     html: () => d.cu ? `<div class="verificado">${jur() ? 'Representante legal verificado' : 'Identidad verificada'} con ClaveÚnica</div>`
       : `<p class="ayuda">Con ClaveÚnica tus datos se llenan solos y después firmas con un clic.</p>
@@ -55,7 +53,7 @@ const P = [
       $('#sin-cu')?.addEventListener('click', () => ir(2));
     },
   },
-  { // 2
+  {
     titulo: () => jur() ? 'Datos de tu empresa' : 'Tus datos',
     html: () => jur()
       ? campo('rut', 'RUT de la empresa', 'Por ejemplo, 76.086.428-5', d.rut, 'data-rut') + campo('nombre', 'Razón social', '', d.nombre)
@@ -71,7 +69,7 @@ const P = [
       return e.length ? e : null;
     },
   },
-  { // 3
+  {
     titulo: '¿Cómo te contactamos?',
     html: () => campo('correo', 'Correo', 'Ahí te llega tu folio y cada aviso', d.correo, 'type="email" autocomplete="email"')
       + campo('fono', 'Teléfono', 'Por si necesitamos llamarte', d.fono, 'type="tel" autocomplete="tel" placeholder="+56 9"'),
@@ -83,14 +81,14 @@ const P = [
       return e.length ? e : null;
     },
   },
-  { // 4
+  {
     titulo: () => clave === 'certificado' ? '¿Qué periodo quieres certificar?' : '¿Cuál es tu faena o pertenencia?',
     html: () => clave === 'certificado'
       ? campo('faena', 'Periodo', 'Por ejemplo, enero a junio de 2027', d.faena)
       : campo('faena', 'Nombre de la faena o pertenencia', 'Como aparece en tus papeles', d.faena),
     validar: () => (d.faena = $('#faena').value.trim()) ? null : [['faena', clave === 'certificado' ? 'Escribe el periodo' : 'Escribe el nombre de la faena o pertenencia']],
   },
-  { // 5
+  {
     titulo: 'Adjunta tus documentos',
     html: () => `<p class="ayuda">Una foto clara con el celular sirve. Si te falta alguno, puedes continuar y enviarlo después con tu RUT y folio.</p>
       <ul class="docs">${docs().map(([n, s], i) => `<li><span class="nom">${n}<small>${s}</small></span>
@@ -99,7 +97,7 @@ const P = [
       if (inp.files.length) { d.adjuntos[inp.dataset.i] = true; inp.closest('li').lastElementChild.outerHTML = '<span class="ok">Adjunto</span>'; }
     })),
   },
-  { // 6
+  {
     titulo: 'Revisa y firma tu solicitud',
     html: () => {
       const n = docs().length, a = Object.keys(d.adjuntos).length;
@@ -152,7 +150,6 @@ function sellar() {
   $('#continuar').focus();
 }
 
-/* ---------- Ayudantes ---------- */
 const val = (n) => ($(`[name=${n}]:checked`) || {}).value || '';
 const op = (n, v, t, s) => `<label class="op" for="${n}-${v}"><input type="radio" name="${n}" id="${n}-${v}" value="${v}" ${d[n] === v ? 'checked' : ''}><i></i><span>${t}<small>${s}</small></span></label>`;
 const campo = (id, lbl, pista, v, extra = '') => `<div class="campo" id="c-${id}"><label for="${id}">${lbl}</label>${pista ? `<span class="pista">${pista}</span>` : ''}<input id="${id}" value="${(v || '').replace(/"/g, '&quot;')}" ${extra}></div>`;
@@ -197,7 +194,7 @@ function ir(n) {
     e.preventDefault();
     const err = p.validar?.();
     if (err) { errores(err); return; }
-    if (n === 0 && d.cu && ((d.rep && !jur()) || (!d.rep && jur()))) { d.cu = false; d.rut = d.nombre = d.rep = ''; } // cambió el tipo de persona
+    if (n === 0 && d.cu && ((d.rep && !jur()) || (!d.rep && jur()))) { d.cu = false; d.rut = d.nombre = d.rep = ''; }
     if (n === TOTAL - 1) return enviar();
     if (desdeRevisar) { desdeRevisar = false; return ir(6); }
     ir(n === 0 && d.cu ? 2 : n + 1);

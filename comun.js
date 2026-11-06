@@ -1,11 +1,9 @@
-// Fachada Plan A: todo ocurre en el navegador, no se envía nada a ningún servidor.
 const $ = (s, c = document) => c.querySelector(s);
 const $$ = (s, c = document) => [...c.querySelectorAll(s)];
 const FLECHA = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 const ATRAS = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 const EJ = '<span class="ej">por confirmar</span>';
 
-/* ---------- Barra y pie comunes ---------- */
 function pintarMarco(actual) {
   const nav = [['index.html', 'Inicio', 'inicio', 'solo-ancho'], ['solicitudes.html', 'Solicitudes', 'solicitudes', ''], ['estado.html', 'Ver mi solicitud', 'estado', '']];
   document.body.insertAdjacentHTML('afterbegin', `
@@ -19,7 +17,6 @@ function pintarMarco(actual) {
   </div></footer>`);
 }
 
-/* ---------- RUT ---------- */
 const limpiarRut = (v) => v.replace(/[^0-9kK]/g, '').toUpperCase();
 function formatearRut(v) {
   const r = limpiarRut(v);
@@ -39,10 +36,9 @@ function activarRut(c = document) {
   $$('[data-rut]', c).forEach((i) => i.addEventListener('input', () => { if (!i.readOnly) i.value = formatearRut(i.value); }));
 }
 
-/* ---------- Trámites (contenido de ejemplo) ---------- */
 const TRAMITES = {
   anticipo: {
-    nombre: 'Anticipo de mineral', corto: 'Anticipo', resumen: 'Solicita un anticipo por el mineral que entregas a ENAMI.', accion: 'Solicitar anticipo',
+    nombre: 'Anticipo', corto: 'Anticipo', resumen: 'Solicita un anticipo por el mineral que entregas a ENAMI.', accion: 'Solicitar anticipo',
     grupo: 1, minutos: 10, respuesta: '10 días hábiles',
     descripcion: '<p>Es un adelanto de dinero sobre el mineral que entregaste en la planta El Salado, antes de que termine el proceso de compra.</p><p>ENAMI revisa tu solicitud en tres etapas: evaluación técnica, evaluación comercial y aprobación de la jefatura. Te avisamos cada vez que avanza.</p>',
     quien: ['Pequeños y medianos productores mineros empadronados en ENAMI.', 'Personas naturales o empresas.', `Que hayan entregado mineral en la planta El Salado. ${EJ}`],
@@ -63,7 +59,7 @@ const TRAMITES = {
     docs: [],
   },
   empadronamiento: {
-    nombre: 'Empadronamiento de productor', corto: 'Empadronamiento', resumen: 'Regístrate como productor minero o actualiza tus antecedentes.', accion: 'Empadronarme',
+    nombre: 'Empadronamiento del productor', corto: 'Empadronamiento', resumen: 'Regístrate como productor minero o actualiza tus antecedentes.', accion: 'Empadronarme',
     grupo: 3, minutos: 15, respuesta: '15 días hábiles',
     descripcion: '<p>Es la inscripción como productor minero en ENAMI. También sirve para actualizar tus datos si algo cambió.</p><p>Estar empadronado es necesario para pedir anticipos y vender tu mineral a ENAMI.</p>',
     quien: ['Personas naturales o empresas que exploten una pertenencia minera.', 'Productores ya inscritos que necesiten actualizar sus datos.'],
